@@ -1,0 +1,41 @@
+# Build directories
+build/
+build-*/
+bin/
+lib/
+out/
+
+# IDEs and Editors
+.lh
+.cache
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# CMake files
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+
+# LLVM/Clang specific
+*.bc
+*.ll
+*.o
+*.so
+*.dylib
+*.a
+
+# Executables
+*_exe
+target_*
+
+# Python caches (if using python scripts)
+__pycache__/
+*.pyc
