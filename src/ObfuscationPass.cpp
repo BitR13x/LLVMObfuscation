@@ -1,6 +1,7 @@
 #include "Flattening.h"
 #include "LinearMBA.h"
 #include "RulesMBA.h"
+#include "StringObfuscation.h"
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/PassPlugin.h"
 
@@ -31,6 +32,10 @@ llvmGetPassPluginInfo() {
                        ArrayRef<PassBuilder::PipelineElement>) {
                         if (Name == "mba-linear") {
                             MPM.addPass(LinearMBAPass());
+                            return true;
+                        }
+                        if (Name == "str-obf") {
+                            MPM.addPass(StringObfuscationPass());
                             return true;
                         }
                         return false;

@@ -34,7 +34,6 @@ compile_commands.json
 
 # Executables
 *_exe
-target_*
 
 # Python caches (if using python scripts)
 __pycache__/

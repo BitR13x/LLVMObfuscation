@@ -36,75 +36,54 @@ mkdir -p build/test
 mkdir -p build/test/IR
 
 # ---------------------------------------------------------------------------
-# 3. MBA tests — tests/test_target.cpp
+# 3. Generic test runner function
 # ---------------------------------------------------------------------------
-run_mba_tests() {
+run_suite() {
+    local NAME=$1
+    local PREFIX=$(echo "$NAME" | tr 'a-z' 'A-Z')
+    
     echo ""
-    echo "[MBA] Compiling tests/test_target.cpp to LLVM Bitcode..."
+    echo "[${PREFIX}] Compiling tests/test_${NAME}.cpp to LLVM Bitcode..."
     clang++ -std=c++11 -O0 -Xclang -disable-O0-optnone \
-        -emit-llvm -c tests/test_target.cpp \
-        -o build/test/test_target.bc
+        -emit-llvm -c "tests/test_${NAME}.cpp" \
+        -o "build/test/test_${NAME}.bc"
 
-    echo "[MBA] Running obfuscation pass (${PASSES})..."
+    echo "[${PREFIX}] Running obfuscation pass (${PASSES})..."
     opt -load-pass-plugin=./build/libObfuscationPass.so \
         -passes="${PASSES}" \
-        build/test/test_target.bc \
-        -o build/test/test_target_obf.bc
+        "build/test/test_${NAME}.bc" \
+        -o "build/test/test_${NAME}_obf.bc"
 
-    llvm-dis build/test/test_target_obf.bc -o build/test/IR/test_target_obf.ll 2>/dev/null || true
+    llvm-dis "build/test/test_${NAME}_obf.bc" -o "build/test/IR/test_${NAME}_obf.ll" 2>/dev/null || true
 
-    echo "[MBA] Compiling obfuscated bitcode to executable..."
-    clang++ build/test/test_target_obf.bc -o build/test/test_target_obf_exe
+    echo "[${PREFIX}] Compiling obfuscated bitcode to executable..."
+    clang++ "build/test/test_${NAME}_obf.bc" -o "build/test/test_${NAME}_obf_exe"
 
     echo ""
-    echo "--- RUNNING MBA DOCTESTS ---"
-    ./build/test/test_target_obf_exe
+    echo "--- RUNNING ${PREFIX} DOCTESTS ---"
+    "./build/test/test_${NAME}_obf_exe"
     echo "----------------------------"
-    echo "[MBA] All tests passed."
+    echo "[${PREFIX}] All tests passed."
 }
 
 # ---------------------------------------------------------------------------
-# 4. CFF tests — tests/test_cff.cpp
-# ---------------------------------------------------------------------------
-run_cff_tests() {
-    echo ""
-    echo "[CFF] Compiling tests/test_cff.cpp to LLVM Bitcode..."
-    clang++ -std=c++11 -O0 -Xclang -disable-O0-optnone \
-        -emit-llvm -c tests/test_cff.cpp \
-        -o build/test/test_cff.bc
-
-    echo "[CFF] Running obfuscation pass (${PASSES})..."
-    opt -load-pass-plugin=./build/libObfuscationPass.so \
-        -passes="${PASSES}" \
-        build/test/test_cff.bc \
-        -o build/test/test_cff_obf.bc
-
-    llvm-dis build/test/test_cff_obf.bc -o build/test/IR/test_cff_obf.ll 2>/dev/null || true
-
-    echo "[CFF] Compiling obfuscated bitcode to executable..."
-    clang++ build/test/test_cff_obf.bc -o build/test/test_cff_obf_exe
-
-    echo ""
-    echo "--- RUNNING CFF DOCTESTS ---"
-    ./build/test/test_cff_obf_exe
-    echo "----------------------------"
-    echo "[CFF] All tests passed."
-}
-
-# ---------------------------------------------------------------------------
-# 5. Dispatch: run the appropriate suite(s) based on the pass name
+# 4. Dispatch: run the appropriate suite(s) based on the pass name
 # ---------------------------------------------------------------------------
 case "${PASSES}" in
+    str*)
+        run_suite "str"
+        ;;
     cff*)
-        run_cff_tests
+        run_suite "cff"
         ;;
     mba*|linear*)
-        run_mba_tests
+        run_suite "target"
         ;;
     *)
-        # Unknown pass — run both suites so we always have coverage
-        run_mba_tests
-        run_cff_tests
+        # Unknown pass — run all suites so we always have coverage
+        run_suite "target"
+        run_suite "cff"
+        run_suite "str"
         ;;
 esac
 

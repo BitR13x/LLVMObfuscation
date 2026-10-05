@@ -14,6 +14,7 @@ add_library(ObfuscationPass MODULE
     src/RulesMBA.cpp
     src/LinearMBA.cpp
     src/Flattening.cpp
+    src/StringObfuscation.cpp
 )
 
 set_target_properties(ObfuscationPass PROPERTIES
